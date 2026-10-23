@@ -345,6 +345,24 @@ function vistaNuevaClave() {
   };
 }
 
+let ip = null;
+const enApp = () => matchMedia('(display-mode: standalone)').matches || navigator.standalone;
+const esIos = /iphone|ipad|ipod/i.test(navigator.userAgent);
+function avisoInstalar() {
+  if (enApp() || document.getElementById('ai')) return;
+  try { if (localStorage.getItem('ai_no')) return; } catch (e) {}
+  if (!ip && !esIos) return;
+  const d = document.createElement('div'); d.id = 'ai'; d.className = 'card';
+  d.style.cssText = 'position:fixed;left:12px;right:12px;bottom:calc(84px + env(safe-area-inset-bottom));z-index:20;max-width:616px;margin:0 auto;box-shadow:0 4px 16px rgba(22,35,59,.2)';
+  d.innerHTML = `<div class="row" style="flex-wrap:nowrap"><span style="font-size:.92rem">${ip ? 'Instalá ' + esc(NAME) + ' en tu celular para abrirla como una app.' : 'Para instalarla: tocá <b>Compartir</b> (el cuadrado con la flecha) y elegí <b>Agregar a inicio</b>.'}</span><span style="display:flex;gap:6px;flex:none">${ip ? '<button class="btn" id="aii">Instalar</button>' : ''}<button class="link" id="aix" aria-label="Cerrar">✕</button></span></div>`;
+  document.body.appendChild(d);
+  document.getElementById('aix').onclick = () => { d.remove(); try { localStorage.setItem('ai_no', '1'); } catch (e) {} };
+  const bi = document.getElementById('aii');
+  if (bi) bi.onclick = async () => { ip.prompt(); await ip.userChoice; ip = null; d.remove(); };
+}
+window.addEventListener('beforeinstallprompt', e => { e.preventDefault(); ip = e; avisoInstalar(); });
+window.addEventListener('appinstalled', () => { const a = document.getElementById('ai'); if (a) a.remove(); });
+if (esIos) setTimeout(avisoInstalar, 2500);
 if ('serviceWorker' in navigator) navigator.serviceWorker.register('sw.js').catch(() => {});
 iniciar();
 </script>
