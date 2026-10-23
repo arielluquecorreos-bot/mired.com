@@ -58,11 +58,23 @@ function vistaAcceso() {
     ${signup ? '<input id="u" placeholder="Tu nombre" required maxlength="30">' : ''}
     <input id="e" type="email" placeholder="Correo electrónico" required>
     <input id="p" type="password" placeholder="Contraseña (mínimo 6 caracteres)" required minlength="6">
+    <label class="muted"><input type="checkbox" id="sp" style="width:auto"> Mostrar contraseña</label>
     <div class="err" id="m"></div>
     <button class="btn" type="submit">${signup ? 'Crear cuenta' : 'Entrar'}</button>
     <div><button type="button" class="link" id="sw">${signup ? 'Ya tengo cuenta' : 'No tengo cuenta, quiero crear una'}</button></div>
+    ${signup ? '' : '<div><button type="button" class="link" id="fg">Olvidé mi contraseña</button></div>'}
   </form></div>`;
   document.getElementById('sw').onclick = () => { signup = !signup; vistaAcceso(); };
+  document.getElementById('sp').onchange = ev => { document.getElementById('p').type = ev.target.checked ? 'text' : 'password'; };
+  const fg = document.getElementById('fg');
+  if (fg) fg.onclick = async () => {
+    const m = document.getElementById('m'), email = document.getElementById('e').value.trim();
+    m.style.color = ''; m.textContent = '';
+    if (!email) { m.textContent = 'Escribí tu correo arriba y volvé a tocar "Olvidé mi contraseña".'; return; }
+    const r = await sb.auth.resetPasswordForEmail(email, {redirectTo: location.origin + location.pathname});
+    if (r.error) { m.textContent = 'No se pudo enviar: ' + r.error.message; return; }
+    m.style.color = '#0a5f67'; m.textContent = 'Listo. Revisá tu correo (y la carpeta de spam) y tocá el enlace para elegir una contraseña nueva.';
+  };
   document.getElementById('f').onsubmit = async ev => {
     ev.preventDefault();
     const m = document.getElementById('m'); m.textContent = '';
@@ -78,6 +90,7 @@ function vistaAcceso() {
 
 async function iniciar() {
   const {data} = await sb.auth.getSession();
+  if (recuperando) return vistaNuevaClave();
   if (!data.session) return vistaAcceso();
   me = data.session.user;
   app.innerHTML = `<header><div class="wrap"><h1>${esc(NAME)}</h1><div>
@@ -290,6 +303,21 @@ async function vistaAdmin() {
   };
 }
 
+
+let recuperando = location.hash.includes('type=recovery');
+sb.auth.onAuthStateChange(ev => { if (ev === 'PASSWORD_RECOVERY') { recuperando = true; vistaNuevaClave(); } });
+function vistaNuevaClave() {
+  app.innerHTML = `<header><div class="wrap"><h1>${esc(NAME)}</h1></div></header>
+  <div class="wrap"><form class="card" id="nf"><h2 style="margin-top:0">Elegí tu contraseña nueva</h2>
+    <input id="np" type="password" placeholder="Contraseña nueva (mínimo 6 caracteres)" required minlength="6">
+    <div class="err" id="nm"></div><button class="btn" type="submit">Guardar contraseña</button></form></div>`;
+  document.getElementById('nf').onsubmit = async ev => {
+    ev.preventDefault();
+    const r = await sb.auth.updateUser({password: document.getElementById('np').value});
+    if (r.error) { document.getElementById('nm').textContent = 'No se pudo cambiar: ' + r.error.message; return; }
+    recuperando = false; history.replaceState(null, '', location.pathname); iniciar();
+  };
+}
 
 iniciar();
 </script>
