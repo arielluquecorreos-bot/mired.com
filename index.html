@@ -2,7 +2,14 @@
 <html lang="es">
 <head>
 <meta charset="utf-8">
-<meta name="viewport" content="width=device-width,initial-scale=1">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<meta name="theme-color" content="#0e7c86">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="default">
+<link rel="manifest" href="manifest.json">
+<link rel="icon" href="icon-192.png">
+<link rel="apple-touch-icon" href="icon-192.png">
 <title>MiRed</title>
 <style>
 :root{--bg:#eef4f6;--card:#fff;--tx:#18262c;--mu:#5d727b;--ac:#0e7c86;--ac2:#0a5f67;--bd:#d9e4e8;--rd:#c0392b}
@@ -34,6 +41,24 @@ textarea{resize:vertical;min-height:70px}
 .muted{color:var(--mu);font-size:.9rem}.precio{color:var(--ac2);font-weight:700;font-size:1.15rem}
 .fotos{display:flex;gap:6px;overflow-x:auto;margin-bottom:8px}.fotos img{height:200px;border-radius:8px;flex:none;max-width:100%;object-fit:cover}
 label{display:block;margin:6px 0}
+html{-webkit-text-size-adjust:100%;text-size-adjust:100%}
+body{overflow-x:hidden;min-height:100dvh}
+img,video{max-width:100%}
+.card{overflow-wrap:anywhere}
+.wrap{max-width:640px;padding-left:max(12px,env(safe-area-inset-left));padding-right:max(12px,env(safe-area-inset-right))}
+header{padding-top:env(safe-area-inset-top)}
+.btn,.tabs button,.acts button,.link{min-height:44px}
+.media{max-height:min(70vh,520px)}
+.fotos img{height:clamp(150px,45vw,240px)}
+.tabs button i{font-style:normal;display:block;font-size:1.2rem;line-height:1.1}
+@media (min-width:900px){body{font-size:17px}.wrap{max-width:700px}}
+@media (max-width:700px){
+ body{padding-bottom:calc(76px + env(safe-area-inset-bottom))}
+ .tabs{position:fixed;left:0;right:0;bottom:0;z-index:9;margin:0;gap:4px;background:#fff;border-top:1px solid var(--bd);padding:6px 8px calc(6px + env(safe-area-inset-bottom))}
+ .tabs button{border:0;background:none;font-size:.8rem;padding:4px 2px}
+ .tabs button.on{background:none;color:var(--ac)}
+ .card{padding:12px;border-radius:10px}
+}
 :focus-visible{outline:3px solid #f0a500;outline-offset:2px}
 </style>
 </head>
@@ -184,9 +209,9 @@ const g = id => document.getElementById(id);
 async function initVentas() {
   esAdmin = (await sb.rpc('es_admin')).data === true;
   const tabs = g('tabs');
-  tabs.innerHTML = `<button data-t="muro" class="on">Muro</button><button data-t="ventas">Ventas</button>${esAdmin ? '<button data-t="admin">Reportes</button>' : ''}`;
+  tabs.innerHTML = `<button data-t="muro" class="on"><i>🏠</i>Muro</button><button data-t="ventas"><i>🛒</i>Ventas</button>${esAdmin ? '<button data-t="admin"><i>🚩</i>Reportes</button>' : ''}`;
   tabs.onclick = e => {
-    const t = e.target.dataset.t; if (!t) return;
+    const bt = e.target.closest('button[data-t]'); if (!bt) return; const t = bt.dataset.t;
     [...tabs.children].forEach(b => b.classList.toggle('on', b.dataset.t === t));
     g('muro').hidden = t !== 'muro'; g('ventas').hidden = t === 'muro';
     if (t === 'ventas') vistaVentas();
@@ -319,6 +344,7 @@ function vistaNuevaClave() {
   };
 }
 
+if ('serviceWorker' in navigator) navigator.serviceWorker.register('sw.js').catch(() => {});
 iniciar();
 </script>
 </body>
