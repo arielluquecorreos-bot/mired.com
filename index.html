@@ -89,8 +89,15 @@ function vistaAcceso() {
     <button class="btn" type="submit">${signup ? 'Crear cuenta' : 'Entrar'}</button>
     <div><button type="button" class="link" id="sw">${signup ? 'Ya tengo cuenta' : 'No tengo cuenta, quiero crear una'}</button></div>
     ${signup ? '' : '<div><button type="button" class="link" id="fg">Olvidé mi contraseña</button></div>'}
-  </form></div>`;
+  </form>
+  <div class="card"><button type="button" class="link" id="gi">¿Cómo instalarla en tu celular?</button>
+    <div id="gt" hidden class="muted" style="line-height:1.6">
+      <p style="margin:6px 0"><b>Es opcional:</b> la red funciona igual desde el navegador, sin instalar nada.</p>
+      <p style="margin:6px 0"><b>Android (Chrome):</b> tocá los tres puntitos de arriba a la derecha y elegí "Instalar aplicación" o "Agregar a la pantalla principal". Si no la ves en inicio, buscala en la lista de aplicaciones.</p>
+      <p style="margin:6px 0"><b>iPhone (Safari):</b> tocá el botón Compartir (el cuadrado con la flecha) y elegí "Agregar a inicio". Tiene que ser desde Safari, no desde WhatsApp.</p>
+    </div></div></div>`;
   document.getElementById('sw').onclick = () => { signup = !signup; vistaAcceso(); };
+  document.getElementById('gi').onclick = () => { const t = document.getElementById('gt'); t.hidden = !t.hidden; };
   document.getElementById('sp').onchange = ev => { document.getElementById('p').type = ev.target.checked ? 'text' : 'password'; };
   const fg = document.getElementById('fg');
   if (fg) fg.onclick = async () => {
